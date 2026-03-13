@@ -7,52 +7,112 @@ from rest_framework import status
 from product import serialize
 # Create your views here.
 
-@api_view(["GET"])
+@api_view(["GET", "PUT", "DELETE"])
 def category_detail(request, id):
+    
     try:
-        review = Category.objects.get(id=id)
+        category = Category.objects.get(id=id)
     except Category.DoesNotExist:
         return Response(
-            data={"text": "not found"},
-            status=status.HTTP_404_NOT_FOUND
+                data={"text": "not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    if request.method == "GET":
+        data = serialize.CategoryDetailSerialize(category, many=False).data
+        return Response(
+            data=data
+            )
+    elif request.method == "DELETE":
+
+        category.delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
         )
-    data = serialize.CategoryDetailSerialize(review, many=False).data
-    return Response(
-        data=data
-    )
-@api_view(http_method_names=['GET'])
+    elif request.method == "PUT":
+        category.name = request.data.get("name")
+        category.save()
+        return Response(
+            data=serialize.CategoryDetailSerialize(category).data,
+            status=status.HTTP_201_CREATED
+        )
+@api_view(http_method_names=['GET', 'POST'])
 def list_api_category(request):
-    categories = Category.objects.all()
-    data = serialize.CategorySerialize(categories, many=True).data
+    if request.method == "GET":
+        categories = Category.objects.all()
+        data = serialize.CategorySerialize(categories, many=True).data
 
-    return Response(
-        data=data
-    )
+        return Response(
+            data=data
+        )
+    elif request.method == "POST":
+        name = request.data.get("name")
 
+        category = Category.objects.create(
+            name=name
+        )
+        return Response(
+            data=serialize.CategorySerialize(category).data,
+            status=status.HTTP_201_CREATED
+        )
 
-@api_view(["GET"])
+@api_view(["GET", "PUT", "DELETE"])
 def product_detail(request, id):
     try:
-        review = Product.objects.get(id=id)
+        product = Product.objects.get(id=id)
     except Product.DoesNotExist:
         return Response(
             data={"text": "not found"},
             status=status.HTTP_404_NOT_FOUND
         )
-    data = serialize.ProductDetailSerialize(review, many=False).data
-    return Response(
-        data=data
-    )
-@api_view(http_method_names=['GET'])
-def product_api_list(request):
-    products = Product.objects.all()
-    
-    data = serialize.ProductListSerialize(products, many=True).data
+    if request.method == "GET":
+        data = serialize.ProductDetailSerialize(product, many=False).data
+        return Response(
+            data=data
+        )
+             
+    elif request.method == "DELETE":
 
-    return Response(
+        product.delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+    elif request.method == "PUT":
+        product.title = request.data.get("title")
+        product.description = request.data.get("description")
+        product.price = request.data.get("price")
+        product.category_id = request.data.get("category_id")
+        product.save()
+        return Response(
+            data=serialize.ProductDetailSerialize(product).data,
+            status=status.HTTP_201_CREATED
+        )
+@api_view(http_method_names=['GET', 'POST'])
+def product_api_list(request):
+    if request.method == "GET":
+        products = Product.objects.all()
+        data = serialize.ProductListSerialize(products, many=True).data
+
+        return Response(
         data=data
     )
-@api_view(["GET"])
+
+    elif request.method == "POST":
+        title = request.data.get("title")
+        description = request.data.get("description")
+        price = request.data.get("price")
+        category_id = request.data.get("category_id")
+        review = Product.objects.create(
+            title=title,
+            description=description,
+            price=price,
+            category_id=category_id
+        )
+        return Response(
+            data=serialize.ProductListSerialize(review).data,
+            status=status.HTTP_201_CREATED
+        )
+    
+@api_view(["GET", "PUT", "DELETE"])
 def review_detail(request, id):
     try:
         review = Review.objects.get(id=id)
@@ -61,18 +121,47 @@ def review_detail(request, id):
             data={"text": "not found"},
             status=status.HTTP_404_NOT_FOUND
         )
-    data = serialize.ReviewDetailSerialize(review, many=False).data
-    return Response(
-        data=data
-    )
-@api_view(http_method_names=['GET'])
-def review_list(request):
-    reviews = Review.objects.all()
-    data = serialize.ReviewSerialize(reviews, many=True).data
-    return Response(
-        data=data
-    )
+    if request.method == "GET":
+        data = serialize.ReviewDetailSerialize(review, many=False).data
+        return Response(
+            data=data
+        )
+    elif request.method == "DELETE":
 
+        review.delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+    elif request.method == "PUT":
+        review.text = request.data.get("text")
+        review.stars = request.data.get("stars")   
+        review.product_id = request.data.get("product_id") 
+        review.save()
+        return Response(
+            data=serialize.ReviewDetailSerialize(review).data,
+            status=status.HTTP_201_CREATED
+        )
+@api_view(http_method_names=['GET', 'POST'])
+def review_list(request):
+    if request.method == "GET":
+        reviews = Review.objects.all()
+        data = serialize.ReviewSerialize(reviews, many=True).data
+        return Response(
+            data=data
+        )
+    elif request.method == "POST":
+        text = request.data.get("text")
+        stars = request.data.get("stars")
+        product_id = request.data.get("product_id")
+        review = Review.objects.create(
+            text= text,
+            stars=stars,
+            product_id=product_id
+        )
+        return Response(
+            data=serialize.ReviewSerialize(review).data,
+            status=status.HTTP_201_CREATED
+        )
 
 
     
