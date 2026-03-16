@@ -7,6 +7,7 @@ from rest_framework import status
 from product import serialize
 # Create your views here.
 
+# Category
 @api_view(["GET", "PUT", "DELETE"])
 def category_detail(request, id):
     
@@ -45,8 +46,14 @@ def list_api_category(request):
             data=data
         )
     elif request.method == "POST":
-        name = request.data.get("name")
-
+        serializer = serialize.CategoryValidateSerialize(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        name = serializer.validated_data.get("name")
         category = Category.objects.create(
             name=name
         )
@@ -55,6 +62,7 @@ def list_api_category(request):
             status=status.HTTP_201_CREATED
         )
 
+# Products
 @api_view(["GET", "PUT", "DELETE"])
 def product_detail(request, id):
     try:
@@ -97,10 +105,16 @@ def product_api_list(request):
     )
 
     elif request.method == "POST":
-        title = request.data.get("title")
-        description = request.data.get("description")
-        price = request.data.get("price")
-        category_id = request.data.get("category_id")
+        serializer = serialize.ProductValidateSerialize(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        title = serializer.validated_data.get("title")
+        description = serializer.validated_data.get("description")
+        price = serializer.validated_data.get("price")
+        category_id = serializer.validated_data.get("category_id")
         review = Product.objects.create(
             title=title,
             description=description,
@@ -111,7 +125,8 @@ def product_api_list(request):
             data=serialize.ProductListSerialize(review).data,
             status=status.HTTP_201_CREATED
         )
-    
+
+# Reviews 
 @api_view(["GET", "PUT", "DELETE"])
 def review_detail(request, id):
     try:
@@ -150,6 +165,12 @@ def review_list(request):
             data=data
         )
     elif request.method == "POST":
+        serializer = serialize.ReviewValidateSerialize(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        
         text = request.data.get("text")
         stars = request.data.get("stars")
         product_id = request.data.get("product_id")
@@ -162,6 +183,7 @@ def review_list(request):
             data=serialize.ReviewSerialize(review).data,
             status=status.HTTP_201_CREATED
         )
+    
 
 
     

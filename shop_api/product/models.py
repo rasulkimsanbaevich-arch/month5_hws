@@ -1,6 +1,5 @@
 from django.db import models
 from django.forms import model_to_dict
-from django.db.models import Avg
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=255)
