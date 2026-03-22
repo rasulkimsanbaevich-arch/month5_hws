@@ -3,11 +3,12 @@ from django.forms import model_to_dict
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=255)
-
     def __str__(self):
         return self.name
-    
-    
+
+
+
+
 class Product(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -32,11 +33,11 @@ class Product(models.Model):
             return 0
 
         return total / count
+     
     
-        
-    
-STARS = ((i, '*' * i)for i in range(1, 5+1))
-    
+
+
+STARS = ((i, '*' * i)for i in range(1, 5+1))  
 class Review(models.Model):
     text = models.TextField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
@@ -46,7 +47,6 @@ class Review(models.Model):
         return self.text
     
     
-    
 
-    
+
     

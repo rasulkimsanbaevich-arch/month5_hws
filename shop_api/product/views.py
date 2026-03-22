@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from .models import Category, Product, Review
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from django.forms import model_to_dict 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response 
 from rest_framework import status
 from product import serialize
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User 
 # Create your views here.
 
 # Category
@@ -39,7 +41,7 @@ def category_detail(request, id):
 @api_view(http_method_names=['GET', 'POST'])
 def list_api_category(request):
     if request.method == "GET":
-        categories = Category.objects.all()
+        categories = Category.objects.all().prefetch_related('productss')
         data = serialize.CategorySerialize(categories, many=True).data
 
         return Response(
@@ -97,7 +99,7 @@ def product_detail(request, id):
 @api_view(http_method_names=['GET', 'POST'])
 def product_api_list(request):
     if request.method == "GET":
-        products = Product.objects.all()
+        products = Product.objects.all().prefetch_related('productss')
         data = serialize.ProductListSerialize(products, many=True).data
 
         return Response(
@@ -183,7 +185,38 @@ def review_list(request):
             data=serialize.ReviewSerialize(review).data,
             status=status.HTTP_201_CREATED
         )
-    
 
+@api_view(['POST'])
+def register(request):
+    if request.method == 'POST':
+        username = request.data.get('username')
+        password = request.data.get('password')
+        User.objects.create_user(username=username, password=password)
+        return Response(data={"message": "User's_created!"}, status=status.HTTP_201_CREATED)
+@api_view(['POST'])
+def authorization(request):
+    if request.method == 'POST':
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user:
+            try: 
+                token = Token.objects.get(user=user)
+                return Response(data={"token": token.key}, status=status.HTTP_200_OK)
+            except Token.DoesNotExist:
+                token = Token.objects.create(user=user)
+                return Response(data={"key": token.key}, status=status.HTTP_201_CREATED)
+        return Response(data={"error": "not found"}, status=status.HTTP_404_NOT_FOUND)
+@api_view(['POST'])
+def test(request):
+    if request.method == 'POST':
+        print(request.user)
+        return Response(data={'message': "succes", "user": str(request.user)})   
 
-    
+@api_view(['GET'])
+def confirm(request):
+    if request.method == 'GET':
+        user = request.data
+        if not user.is_authenticated:
+            return Response(data={"text": "You are not authenticated!"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={"Text": "Welcome!"})

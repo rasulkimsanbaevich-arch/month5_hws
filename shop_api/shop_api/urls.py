@@ -25,5 +25,10 @@ urlpatterns = [
     path('api/v1/products/', views.product_api_list),
     path('api/v1/products/<int:id>/', views.product_detail),
     path('api/v1/reviews/', views.review_list),
-    path('api/v1/reviews/<int:id>/', views.review_detail)
+    path('api/v1/reviews/<int:id>/', views.review_detail),
+    path('api/v1/test/', views.test),
+    path('api/v1/login/', views.authorization),
+    path('api/v1/register/', views.register),
+    path('api/v1/users/confirm/', views.confirm)
+
 ]
