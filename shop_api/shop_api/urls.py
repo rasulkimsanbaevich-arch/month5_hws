@@ -15,8 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from product import views
+from . import swagger
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +30,9 @@ urlpatterns = [
     path('api/v1/test/', views.test),
     path('api/v1/login/', views.authorization),
     path('api/v1/register/', views.register),
-    path('api/v1/users/confirm/', views.confirm)
+    path('api/v1/users/confirm/', views.confirm),
+
+    path('api/v1/cbv/', include('cbv.urls'))
 
 ]
+urlpatterns += swagger.urlpatterns
